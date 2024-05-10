@@ -1,0 +1,32 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const courseRoutes = require('./routes/courseRoutes');
+const authRoutes = require('./routes/authRoutes')
+const path = require('path');
+
+const MONGO_URI= "mongodb+srv://harshitvishwakarma007:HarshitWithNoSpecialCharacter@cluster1.22i9t1u.mongodb.net/cms"
+
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({extended: false}))
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+app.use(authRoutes)
+app.use(courseRoutes)
+
+
+mongoose.connect(MONGO_URI)
+.then(response=>{
+    app.listen(3000, () => {
+      console.log("app is running...");
+    });
+})
+.catch(error =>{
+    console.log(error);
+})
+
+
