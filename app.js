@@ -6,7 +6,7 @@ const seminarRoutes = require('./routes/seminarRoutes')
 const path = require('path');
 
 
-const MONGO_URI= "mongodb+srv://harshitvishwakarma007:HarshitWithNoSpecialCharacter@cluster1.22i9t1u.mongodb.net/cms"
+const MONGO_URI= "DATABASE URL"
 
 const app = express();
 
