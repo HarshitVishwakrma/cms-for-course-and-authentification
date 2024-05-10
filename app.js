@@ -1,8 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const courseRoutes = require('./routes/courseRoutes');
-const authRoutes = require('./routes/authRoutes')
+const authRoutes = require('./routes/authRoutes');
+const seminarRoutes = require('./routes/seminarRoutes')
 const path = require('path');
+
 
 const MONGO_URI= "mongodb+srv://harshitvishwakarma007:HarshitWithNoSpecialCharacter@cluster1.22i9t1u.mongodb.net/cms"
 
@@ -17,6 +19,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(authRoutes)
 app.use(courseRoutes)
+app.use(seminarRoutes)
 
 
 mongoose.connect(MONGO_URI)

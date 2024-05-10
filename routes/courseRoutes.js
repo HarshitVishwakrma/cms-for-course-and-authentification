@@ -15,8 +15,8 @@ router.get('/courses', courseController.getCourses);
 router.post('/courses',authController.authenticateUser,Course.uploadPreviewImage, courseController.addCourse);
 
 
-router.delete('/courses/:courseId', courseController.deleteCourse);
+router.delete('/courses/:courseId',authController.authenticateUser, courseController.deleteCourse);
 
-router.put('/courses/:courseId', courseController.updateCourse)
+router.put('/courses/:courseId',authController.authenticateUser, courseController.updateCourse)
 
 module.exports = router;
