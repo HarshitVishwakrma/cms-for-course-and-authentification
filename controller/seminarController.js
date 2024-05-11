@@ -48,7 +48,7 @@ exports.updateSeminars = async (req, res, next)=>{
 
         if(req.file){
             const fs = require('fs');
-            fs.unlinkSync(existingCourse.previewImage);
+            fs.unlinkSync(existingSeminar.previewImage);
             updateFields.previewImage = req.file.path;
         }
         
@@ -70,7 +70,7 @@ exports.deleteSeminars = async (req, res, next)=>{
     try{
         const seminarId = req.params.seminarId;
 
-        const existingSeminar = await Course.findById(seminarId);
+        const existingSeminar = await Seminar.findById(seminarId);
 
         if(!existingSeminar){
             return res.status(404).json({message : 'Course not found'})
@@ -79,7 +79,7 @@ exports.deleteSeminars = async (req, res, next)=>{
         const fs = require('fs');
         fs.unlinkSync(existingSeminar.previewImage);
 
-        const deleteSeminar = await Course.findByIdAndDelete(seminarId);
+        const deleteSeminar = await Seminar.findByIdAndDelete(seminarId);
         if(!deleteSeminar){
             return res.status(401).json({message : 'failed to delete seminar'});
         }

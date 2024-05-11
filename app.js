@@ -2,7 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const courseRoutes = require('./routes/courseRoutes');
 const authRoutes = require('./routes/authRoutes');
-const seminarRoutes = require('./routes/seminarRoutes')
+const seminarRoutes = require('./routes/seminarRoutes');
+const blogRoutes = require('./routes/blogRoutes');
 const path = require('path');
 
 
@@ -20,6 +21,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(authRoutes)
 app.use(courseRoutes)
 app.use(seminarRoutes)
+app.use(blogRoutes)
 
 
 mongoose.connect(MONGO_URI)

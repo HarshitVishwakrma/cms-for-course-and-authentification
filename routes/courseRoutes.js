@@ -4,10 +4,6 @@ const Course = require('../model/course');
 const authController  = require('../controller/authController')
 
 
-
-
-
-
 const courseController = require('../controller/courseController')
 
 router.get('/courses', courseController.getCourses);
