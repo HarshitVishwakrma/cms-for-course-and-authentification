@@ -35,4 +35,3 @@ seminarSchema.statics.uploadPreviewImage = upload.single('previewImage')
 const Seminar = mongoose.model('Seminar', seminarSchema);
 
 module.exports = Seminar;
-

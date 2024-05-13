@@ -5,9 +5,12 @@ const authRoutes = require('./routes/authRoutes');
 const seminarRoutes = require('./routes/seminarRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const path = require('path');
+require('dotenv').config();
 
 
-const MONGO_URI= "DATABASE URL"
+
+const MONGO_URI= process.env.MONGO_URI;
+
 
 const app = express();
 
@@ -26,7 +29,7 @@ app.use(blogRoutes)
 
 mongoose.connect(MONGO_URI)
 .then(response=>{
-    app.listen(3000, () => {
+    app.listen(process.env.PORT || 3000, () => {
       console.log("app is running...");
     });
 })
