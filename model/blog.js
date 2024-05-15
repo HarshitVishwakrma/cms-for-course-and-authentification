@@ -57,7 +57,7 @@ const commentSchema = new schema({
 
 const blogSchema = new schema({
     title : {type : String, required : true},
-    description : {type : String, required : true},
+    points : {type : Object, required : true},
     previewImage : {type : String, required : true},
     comments : {type : [commentSchema], default : []},
     createdAt : {type : Date, default : getFormattedDateTime() }

@@ -14,12 +14,12 @@ exports.getBlogs = async (req, res, next)=>{
 
 exports.addBlog = async (req, res, next)=>{
     try{
-        const {title, description} = req.body;
+        const {title, points} = req.body;
         const previewImage = req.file;
 
         const blog = new Blog({
             title : title,
-            description : description,
+            points : points,
             previewImage: previewImage.path
         })
 
@@ -35,9 +35,9 @@ exports.addBlog = async (req, res, next)=>{
 exports.updateBlog = async (req, res, next)=>{
 
     try{   
-        const {title, description} = req.body;
+        const {title, points} = req.body;
         const blogId = req.params.blogId;
-        let updateFields = {title, description, place};
+        let updateFields = {title, points};
 
         const existingBlog = await Blog.findById(blogId);
 
