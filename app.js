@@ -5,14 +5,16 @@ const authRoutes = require('./routes/authRoutes');
 const seminarRoutes = require('./routes/seminarRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const path = require('path');
+const cors = require('cors');
 require('dotenv').config();
-
 
 
 const MONGO_URI= process.env.MONGO_URI;
 
 
 const app = express();
+
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}))

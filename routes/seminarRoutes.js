@@ -9,6 +9,6 @@ const Seminar = require('../model/seminar')
 router.get('/seminars', seminarController.getSeminars);
 router.post('/seminar',authController.authenticateUser ,Seminar.uploadPreviewImage, seminarController.addSeminars);
 router.delete('/seminar/:seminarId',authController.authenticateUser, seminarController.deleteSeminars);
-router.put('/seminar/:seminarId',authController.authenticateUser, seminarController.updateSeminars)
+router.put('/seminar/:seminarId',authController.authenticateUser, Seminar.uploadPreviewImage, seminarController.updateSeminars)
 
 module.exports = router;

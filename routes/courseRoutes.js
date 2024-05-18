@@ -13,6 +13,6 @@ router.post('/courses',authController.authenticateUser,Course.uploadPreviewImage
 
 router.delete('/courses/:courseId',authController.authenticateUser, courseController.deleteCourse);
 
-router.put('/courses/:courseId',authController.authenticateUser, courseController.updateCourse)
+router.put('/courses/:courseId',authController.authenticateUser ,Course.uploadPreviewImage, courseController.updateCourse)
 
 module.exports = router;

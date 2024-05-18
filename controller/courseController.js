@@ -18,16 +18,14 @@ exports.getCourses = async (req, res, next)=>{
 
 exports.addCourse = async (req, res, next)=>{
     try {
-        const { title, description, duration, mentor } = req.body;
+        const { title, description, duration } = req.body;
         const previewImage = req.file.path; // Get the path of the uploaded image
 
         const newCourse = new Course({
-          title,
-          description,
-          mentor,
-          duration,
-          previewImage,
-          mentor
+          title : title,
+          description : description,
+          duration : duration,
+          previewImage : previewImage,
         });
     
         await newCourse.save();
@@ -42,9 +40,9 @@ exports.addCourse = async (req, res, next)=>{
 exports.updateCourse = async (req, res, next)=>{
 
     try{   
-        const {title, description, duration, mentor} = req.body;
+        const {title, description, duration} = req.body;
         const courseId = req.params.courseId;
-        let updateFields = {title, description, duration, mentor};
+        let updateFields = {title, description, duration};
 
         const existingCourse = await Course.findById(courseId);
 
