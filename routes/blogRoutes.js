@@ -8,7 +8,7 @@ const Blog = require('../model/blog')
 
 router.get('/blogs', blogController.getBlogs);
 router.post('/blogs',authController.authenticateUser, Blog.uploadPreviewImage, blogController.addBlog);
-router.delete('/blogs/:blogId',authController.authenticateUser, blogController.deleteblog);
+router.delete('/blogs/:blogId',authController.authenticateUser, blogController.deleteBlog);
 router.put('/blogs/:blogId',authController.authenticateUser, Blog.uploadPreviewImage, blogController.updateBlog)
 
 
