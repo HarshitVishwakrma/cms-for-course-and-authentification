@@ -28,9 +28,9 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 const courseSchema = new schema({
   title: { type: String, required: true },
-  fee: {type : String , required : true},
-  duration: { type: String, required: true },
-  description: {type : Object, required : true},
+  fee : {type : Number , required : true},
+  duration: { type: Number, required: true },
+  description : {type : Object, required : true},
   previewImage: {
     type: String, // Assuming storing image path as string
     required: true

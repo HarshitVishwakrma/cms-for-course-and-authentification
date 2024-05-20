@@ -16,80 +16,230 @@ exports.getCourses = async (req, res, next)=>{
     }
 }
 
-exports.addCourse = async (req, res, next)=>{
-    try {
-        const { title, description, duration,fee } = req.body;
-        const previewImage = req.file.path; // Get the path of the uploaded image
+// exports.addCourse = async (req, res, next)=>{
+//     try {
+//         const { title, description, duration } = req.body;
+//         const previewImage = req.file.path; // Get the path of the uploaded image
 
-        const newCourse = new Course({
-          title : title,
-          fee : fee,
-          description : description,
-          duration : duration,
-          previewImage : previewImage,
-        });
+//         const newCourse = new Course({
+//           title : title,
+//           description : description,
+//           duration : duration,
+//           previewImage : previewImage,
+//         });
     
+//         await newCourse.save();
+    
+//         res.status(201).json({ message: 'Course created successfully' });
+//       } catch (error) {
+//         console.log(error)
+//         res.status(500).json({ error: error.message });
+//       }
+// }
+
+const Course = require('./models/course'); // Adjust the path to your Course model
+const bucket = require('./firebase'); // Adjust the path to your firebase.js
+
+exports.addCourse = async (req, res, next) => {
+  try {
+    const { title, description, duration, fee } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'Preview image is required' });
+    }
+
+    const previewImage = req.file;
+    const blob = bucket.file(Date.now() + "-" + previewImage.originalname);
+    const blobStream = blob.createWriteStream({
+      metadata: {
+        contentType: previewImage.mimetype,
+      },
+    });
+
+    blobStream.on("error", (err) => {
+      return res.status(500).json({ message: err.message });
+    });
+
+    blobStream.on("finish", async () => {
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+
+      const newCourse = new Course({
+        title: title,
+        description: description,
+        duration: duration,
+        fee: fee,
+        previewImage: publicUrl,
+      });
+
+      try {
         await newCourse.save();
-    
-        res.status(201).json({ message: 'Course created successfully' });
+        res.status(201).json({ message: 'Course created successfully', course: newCourse });
       } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(500).json({ error: error.message });
       }
-}
+    });
 
-exports.updateCourse = async (req, res, next)=>{
+    blobStream.end(previewImage.buffer);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+};
 
-    try{   
-        const {title, description, duration, fee} = req.body;
-        const courseId = req.params.courseId;
-        let updateFields = {title, description, duration,fee};
 
-        const existingCourse = await Course.findById(courseId);
 
-        if(!existingCourse){
-            return res.status(404).json({message : 'Course not found'});
-        }
+// exports.updateCourse = async (req, res, next)=>{
 
-        if(req.file){
-            const fs = require('fs');
-            fs.unlinkSync(existingCourse.previewImage);
-            updateFields.previewImage = req.file.path;
-        }
+//     try{   
+//         const {title, description, duration} = req.body;
+//         const courseId = req.params.courseId;
+//         let updateFields = {title, description, duration};
+
+//         const existingCourse = await Course.findById(courseId);
+
+//         if(!existingCourse){
+//             return res.status(404).json({message : 'Course not found'});
+//         }
+
+//         if(req.file){
+//             const fs = require('fs');
+//             fs.unlinkSync(existingCourse.previewImage);
+//             updateFields.previewImage = req.file.path;
+//         }
         
-        const updatedCourse = await Course.findByIdAndUpdate(courseId, updateFields, {new : true})
+//         const updatedCourse = await Course.findByIdAndUpdate(courseId, updateFields, {new : true})
 
-        if(!updatedCourse){
-            return res.status(404).json({message : 'Course not found!'});
-        }
+//         if(!updatedCourse){
+//             return res.status(404).json({message : 'Course not found!'});
+//         }
 
-        res.status(201).json({message : 'Course updated succesfully'})
+//         res.status(201).json({message : 'Course updated succesfully'})
 
-    }catch(error){
-        console.log(error)
-        res.status(500).json({ error: error.message });
+//     }catch(error){
+//         console.log(error)
+//         res.status(500).json({ error: error.message });
+//     }
+// }
+
+const Course = require('./models/course'); // Adjust the path to your Course model
+const bucket = require('./firebase'); // Adjust the path to your firebase.js
+const path = require('path');
+
+exports.updateCourse = async (req, res, next) => {
+  try {   
+    const { title, description, duration, fee } = req.body;
+    const courseId = req.params.courseId;
+    let updateFields = { title, description, duration, fee };
+
+    const existingCourse = await Course.findById(courseId);
+
+    if (!existingCourse) {
+      return res.status(404).json({ message: 'Course not found' });
     }
-}
 
-exports.deleteCourse = async (req, res, next)=>{
-    try{
-        const courseId = req.params.courseId;
+    if (req.file) {
+      // Delete the old image from Firebase
+      if (existingCourse.previewImage) {
+        const oldImagePath = path.basename(existingCourse.previewImage);
+        const oldImageBlob = bucket.file(oldImagePath);
+        await oldImageBlob.delete();
+      }
 
-        const existingCourse = await Course.findById(courseId);
+      // Upload the new image to Firebase
+      const newBlob = bucket.file(Date.now() + "-" + req.file.originalname);
+      const newBlobStream = newBlob.createWriteStream({
+        metadata: {
+          contentType: req.file.mimetype,
+        },
+      });
 
-        if(!existingCourse){
-            return res.status(404).json({message : 'Course not found'})
+      newBlobStream.on("error", (err) => {
+        return res.status(500).json({ message: err.message });
+      });
+
+      newBlobStream.on("finish", async () => {
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${newBlob.name}`;
+        updateFields.previewImage = publicUrl;
+
+        const updatedCourse = await Course.findByIdAndUpdate(courseId, updateFields, { new: true });
+
+        if (!updatedCourse) {
+          return res.status(404).json({ message: 'Course not found!' });
         }
 
-        const fs = require('fs');
-        fs.unlinkSync(existingCourse.previewImage);
+        res.status(200).json({ message: 'Course updated successfully', course: updatedCourse });
+      });
 
-        const deleteCourse = await Course.findByIdAndDelete(courseId);
-        if(!deleteCourse){
-            return res.status(401).json({message : 'failed to delete course'});
-        }
-        res.status(201).json({message : 'course deleted'});
-    }catch(error){
-        res.status(500).json({error : error.message})
+      newBlobStream.end(req.file.buffer);
+    } else {
+      const updatedCourse = await Course.findByIdAndUpdate(courseId, updateFields, { new: true });
+
+      if (!updatedCourse) {
+        return res.status(404).json({ message: 'Course not found!' });
+      }
+
+      res.status(200).json({ message: 'Course updated successfully', course: updatedCourse });
     }
-}
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+// exports.deleteCourse = async (req, res, next)=>{
+//     try{
+//         const courseId = req.params.courseId;
+
+//         const existingCourse = await Course.findById(courseId);
+
+//         if(!existingCourse){
+//             return res.status(404).json({message : 'Course not found'})
+//         }
+
+//         const fs = require('fs');
+//         fs.unlinkSync(existingCourse.previewImage);
+
+//         const deleteCourse = await Course.findByIdAndDelete(courseId);
+//         if(!deleteCourse){
+//             return res.status(401).json({message : 'failed to delete course'});
+//         }
+//         res.status(201).json({message : 'course deleted'});
+//     }catch(error){
+//         res.status(500).json({error : error.message})
+//     }
+// }
+
+exports.deleteCourse = async (req, res, next) => {
+    try {
+      const courseId = req.params.courseId;
+  
+      const existingCourse = await Course.findById(courseId);
+  
+      if (!existingCourse) {
+        return res.status(404).json({ message: 'Course not found' });
+      }
+  
+      if (existingCourse.previewImage) {
+        const imagePath = path.basename(existingCourse.previewImage);
+        const imageBlob = bucket.file(imagePath);
+  
+        try {
+          await imageBlob.delete();
+        } catch (err) {
+          return res.status(500).json({ message: "Failed to delete image from storage", error: err.message });
+        }
+      }
+  
+      const deleteCourse = await Course.findByIdAndDelete(courseId);
+      if (!deleteCourse) {
+        return res.status(401).json({ message: 'Failed to delete course' });
+      }
+  
+      res.status(200).json({ message: 'Course deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
