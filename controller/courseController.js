@@ -1,5 +1,6 @@
 const Course = require('../model/course')
-const jwt = require('jsonwebtoken');
+const bucket = require('../bucket');
+const path = require('path');
 
 exports.getCourses = async (req, res, next)=>{
     try{
@@ -37,8 +38,6 @@ exports.getCourses = async (req, res, next)=>{
 //       }
 // }
 
-const Course = require('./models/course'); // Adjust the path to your Course model
-const bucket = require('./firebase'); // Adjust the path to your firebase.js
 
 exports.addCourse = async (req, res, next) => {
   try {
@@ -122,9 +121,6 @@ exports.addCourse = async (req, res, next) => {
 //     }
 // }
 
-const Course = require('./models/course'); // Adjust the path to your Course model
-const bucket = require('./firebase'); // Adjust the path to your firebase.js
-const path = require('path');
 
 exports.updateCourse = async (req, res, next) => {
   try {   
