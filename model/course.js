@@ -4,15 +4,7 @@ const schema = mongoose.Schema;
 
 const multer = require("multer");
 
-// Set up multer storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Store uploaded files in the uploads folder
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname); // Generate unique filenames
-  },
-});
+const storage = multer.memoryStorage();
 
 // Filter for image files
 const fileFilter = (req, file, cb) => {
