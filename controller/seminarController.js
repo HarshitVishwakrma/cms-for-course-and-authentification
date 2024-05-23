@@ -1,4 +1,7 @@
 const Seminar = require('../model/seminar')
+const bucket = require('../bucket');
+const path = require('path');
+
 
 exports.getSeminars = async (req, res, next)=>{
     try{
@@ -14,8 +17,11 @@ exports.getSeminars = async (req, res, next)=>{
 
 exports.addSeminars =async (req, res) => {
     const { title, place } = req.body;
-    const previewImageFile = req.file;
-  
+    // const previewImageFile = req.file;
+    // console.log(req.file)
+    // console.log(req.files)
+    const files = req.files;
+    const previewImageFile = files.previewImage ? files.previewImage[0] : null;
     try {
       if (!previewImageFile) {
         return res.status(400).send('Preview image is required');
@@ -56,7 +62,9 @@ exports.addSeminars =async (req, res) => {
 exports.updateSeminars = async (req, res) => {
     const { id } = req.params;
     const { title, place } = req.body;
-    const previewImageFile = req.file;
+    // const previewImageFile = req.file;
+    const files = req.files;
+    const previewImageFile = files.previewImage ? files.previewImage[0] : null;
   
     try {
       const seminar = await Seminar.findById(id);
