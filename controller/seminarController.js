@@ -12,79 +12,114 @@ exports.getSeminars = async (req, res, next)=>{
     }
 }
 
-exports.addSeminars = async (req, res, next)=>{
-    try{
-        const {title, description, place} = req.body;
-        const previewImage = req.file;
-
-        const seminar = new Seminar({
-            title : title,
-            description : description,
-            place : place,
-            previewImage: previewImage.path
-        })
-
-        await seminar.save()
-
-        res.status(201).json({message : 'Seminar uploaded succesfully'});
-
-    }catch(error){
-        res.status(500).json({message : error.message})
+exports.addSeminars =async (req, res) => {
+    const { title, place } = req.body;
+    const previewImageFile = req.file;
+  
+    try {
+      if (!previewImageFile) {
+        return res.status(400).send('Preview image is required');
+      }
+  
+      // Upload preview image to Firebase
+      const blob = bucket.file(previewImageFile.originalname);
+      const blobStream = blob.createWriteStream({
+        metadata: {
+          contentType: previewImageFile.mimetype
+        }
+      });
+  
+      await new Promise((resolve, reject) => {
+        blobStream.on('finish', () => {
+          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+          resolve(publicUrl);
+        }).on('error', (err) => {
+          reject(err);
+        }).end(previewImageFile.buffer);
+      });
+  
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+  
+      const newSeminar = new Seminar({
+        title,
+        previewImage: publicUrl,
+        place
+      });
+  
+      await newSeminar.save();
+      res.status(201).send('Seminar added successfully!');
+    } catch (err) {
+      res.status(500).send(`Error adding seminar: ${err.message}`);
     }
-}
+  };
 
-exports.updateSeminars = async (req, res, next)=>{
-
-    try{   
-        const {title, description, place} = req.body;
-        const seminarId = req.params.seminarId;
-        let updateFields = {title, description, place};
-
-        const existingSeminar = await Seminar.findById(seminarId);
-
-        if(!existingSeminar){
-            return res.status(404).json({message : 'Seminar not found'});
+exports.updateSeminars = async (req, res) => {
+    const { id } = req.params;
+    const { title, place } = req.body;
+    const previewImageFile = req.file;
+  
+    try {
+      const seminar = await Seminar.findById(id);
+      if (!seminar) {
+        return res.status(404).send('Seminar not found');
+      }
+  
+      if (previewImageFile) {
+        // Delete old preview image from Firebase
+        if (seminar.previewImage) {
+          const oldPreviewImageName = seminar.previewImage.split('/').pop();
+          await bucket.file(oldPreviewImageName).delete();
         }
-
-        if(req.file){
-            const fs = require('fs');
-            fs.unlinkSync(existingSeminar.previewImage);
-            updateFields.previewImage = req.file.path;
-        }
-        
-        const updatedSeminar = await Seminar.findByIdAndUpdate(seminarId, updateFields, {new : true})
-
-        if(!updatedSeminar){
-            return res.status(404).json({message : 'Seminar not found!'});
-        }
-
-        res.status(201).json({message : 'Seminar updated succesfully'})
-
-    }catch(error){
-        console.log(error)
-        res.status(500).json({ error: error.message });
+  
+        // Upload new preview image to Firebase
+        const blob = bucket.file(previewImageFile.originalname);
+        const blobStream = blob.createWriteStream({
+          metadata: {
+            contentType: previewImageFile.mimetype
+          }
+        });
+  
+        await new Promise((resolve, reject) => {
+          blobStream.on('finish', () => {
+            const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+            seminar.previewImage = publicUrl;
+            resolve();
+          }).on('error', (err) => {
+            reject(err);
+          }).end(previewImageFile.buffer);
+        });
+      }
+  
+      seminar.title = title;
+      seminar.place = place;
+  
+      await seminar.save();
+      res.status(200).send('Seminar updated successfully!');
+    } catch (err) {
+      res.status(500).send(`Error updating seminar: ${err.message}`);
     }
-}
+  };
 
-exports.deleteSeminars = async (req, res, next)=>{
-    try{
-        const seminarId = req.params.seminarId;
-
-        const existingSeminar = await Seminar.findById(seminarId);
-
-        if(!existingSeminar){
-            return res.status(404).json({message : 'Course not found'})
-        }
-
-        const fs = require('fs');
-        fs.unlinkSync(existingSeminar.previewImage);
-
-        const deleteSeminar = await Seminar.findByIdAndDelete(seminarId);
-        if(!deleteSeminar){
-            return res.status(401).json({message : 'failed to delete seminar'});
-        }
-        res.status(201).json({message : 'seminar deleted'});
-    }catch(error){
-        res.status(500).json({error : error.message})
+exports.deleteSeminars = async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const seminar = await Seminar.findById(id);
+      if (!seminar) {
+        return res.status(404).send('Seminar not found');
+      }
+  
+      // Delete preview image from Firebase
+      if (seminar.previewImage) {
+        const oldPreviewImageName = seminar.previewImage.split('/').pop();
+        await bucket.file(oldPreviewImageName).delete();
+      }
+  
+      // Delete the seminar document from MongoDB
+      await Seminar.findByIdAndDelete(id);
+  
+      res.status(200).send('Seminar deleted successfully!');
+    } catch (err) {
+      res.status(500).send(`Error deleting seminar: ${err.message}`);
     }
-}
+  }

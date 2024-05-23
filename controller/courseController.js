@@ -1,6 +1,6 @@
 const Course = require('../model/course')
 const bucket = require('../bucket');
-const path = require('path');
+const path = require('path')
 
 exports.getCourses = async (req, res, next)=>{
     try{
@@ -17,8 +17,7 @@ exports.getCourses = async (req, res, next)=>{
     }
 }
 
-
-
+ 
 
 exports.addCourse = async (req, res, next) => {
   try {
@@ -66,6 +65,7 @@ exports.addCourse = async (req, res, next) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 

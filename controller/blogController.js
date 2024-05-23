@@ -1,6 +1,7 @@
 const Blog = require("../model/blog");
 const bucket = require("../bucket");
-const path = require('path')
+const path = require("path");
+
 
 exports.getBlogs = async (req, res, next) => {
   try {
@@ -14,204 +15,198 @@ exports.getBlogs = async (req, res, next) => {
   }
 };
 
-exports.addBlog = async (req, res, next) => {
-    const { title, points } = req.body;
-    const previewImage = req.file;
 
-    const blob = bucket.file(Date.now() + "-" + previewImage.originalname);
-    const blobStream = blob.createWriteStream({
-      metadata: {
-        contentType: req.file.mimetype,
-      },
-    });
+exports.addBlog = async (req, res) => {
+  const { title, points } = req.body;
+  const files = req.files;
+  const previewImageFile = files.previewImage ? files.previewImage[0] : null;
+  const pointImagesFiles = files.pointImages || [];
 
-    blobStream.on("error", (err) => {
-      res.status(500).send({ message: err.message });
-    });
-
-    blobStream.on('finish', async ()=>{
-
-        console.log('reached here')
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-
-        const blog = new Blog({
-            title : title,
-            points : points,
-            previewImage : publicUrl
-        })
-
-        try{
-            await blog.save()
-            res.json({'message': 'Blog uploaded succesfully'})
-        }catch(error){
-            res.json({"message": error.message})
-        }
-    })
-
-    // const blog = new Blog({
-    //   title: title,
-    //   points: points,
-    //   previewImage: previewImage.path,
-    // });
-
-    // await blog.save();
-
-    // res.status(201).json({ message: "Blog uploaded succesfully" });
-    blobStream.end(previewImage.buffer);
-};
-
-// exports.updateBlog = async (req, res, next) => {
-//   try {
-//     const { title, points } = req.body;
-//     const blogId = req.params.blogId;
-//     let updateFields = { title, points };
-
-//     const existingBlog = await Blog.findById(blogId);
-
-//     if (!existingBlog) {
-//       return res.status(404).json({ message: "Blog not found" });
-//     }
-
-//     if (req.file) {
-//       const fs = require("fs");
-//       fs.unlinkSync(existingBlog.previewImage);
-//       updateFields.previewImage = req.file.path;
-//     }
-
-//     const updatedBlog = await Blog.findByIdAndUpdate(blogId, updateFields, {
-//       new: true,
-//     });
-
-//     if (!updatedBlog) {
-//       return res.status(404).json({ message: "Blog not found!" });
-//     }
-
-//     res.status(201).json({ message: "Blog updated succesfully" });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-exports.updateBlog = async (req, res, next) => {
   try {
-    const { title, points } = req.body;
-    const blogId = req.params.blogId;
-    let updateFields = { title, points };
+    const imageUrls = {};
 
-    const existingBlog = await Blog.findById(blogId);
-
-    if (!existingBlog) {
-      return res.status(404).json({ message: "Blog not found" });
-    }
-
-    if (req.file) {
-      // Delete the old image from Firebase
-      if (existingBlog.previewImage) {
-        const oldImagePath = path.basename(existingBlog.previewImage);
-        const oldImageBlob = bucket.file(oldImagePath);
-        await oldImageBlob.delete();
-      }
-
-      // Upload the new image to Firebase
-      const newBlob = bucket.file(Date.now() + "-" + req.file.originalname);
-      const newBlobStream = newBlob.createWriteStream({
+    // Handle previewImage upload
+    if (previewImageFile) {
+      const blob = bucket.file(previewImageFile.originalname);
+      const blobStream = blob.createWriteStream({
         metadata: {
-          contentType: req.file.mimetype,
-        },
-      });
-
-      newBlobStream.on("error", (err) => {
-        return res.status(500).send({ message: err.message });
-      });
-
-      newBlobStream.on("finish", async () => {
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${newBlob.name}`;
-        updateFields.previewImage = publicUrl;
-
-        const updatedBlog = await Blog.findByIdAndUpdate(blogId, updateFields, {
-          new: true,
-        });
-
-        if (!updatedBlog) {
-          return res.status(404).json({ message: "Blog not found!" });
+          contentType: previewImageFile.mimetype
         }
-
-        res.status(200).json({ message: "Blog updated successfully", blog: updatedBlog });
       });
 
-      newBlobStream.end(req.file.buffer);
-    } else {
-      const updatedBlog = await Blog.findByIdAndUpdate(blogId, updateFields, {
-        new: true,
+      await new Promise((resolve, reject) => {
+        blobStream.on('finish', () => {
+          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+          imageUrls.previewImage = publicUrl;
+          resolve();
+        }).on('error', (err) => {
+          reject(err);
+        }).end(previewImageFile.buffer);
       });
-
-      if (!updatedBlog) {
-        return res.status(404).json({ message: "Blog not found!" });
-      }
-
-      res.status(200).json({ message: "Blog updated successfully", blog: updatedBlog });
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: error.message });
-  }
-};
 
-exports.deleteBlog = async (req, res, next) => {
+    // Handle pointImages upload
+    for (const file of pointImagesFiles) {
+      const blob = bucket.file(file.originalname);
+      const blobStream = blob.createWriteStream({
+        metadata: {
+          contentType: file.mimetype
+        }
+      });
+
+      await new Promise((resolve, reject) => {
+        blobStream.on('finish', () => {
+          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+          imageUrls[file.originalname] = publicUrl;
+          resolve();
+        }).on('error', (err) => {
+          reject(err);
+        }).end(file.buffer);
+      });
+    }
+
+    // Replace image paths in points with URLs
+    const parsedPoints = JSON.parse(points);
+    for (const key in parsedPoints) {
+      if (parsedPoints[key].image && imageUrls[parsedPoints[key].image]) {
+        parsedPoints[key].image = imageUrls[parsedPoints[key].image];
+      }
+    }
+
+    const newBlog = new Blog({
+      title,
+      previewImage: imageUrls.previewImage || '',
+      points: parsedPoints
+    });
+
+    await newBlog.save();
+    res.status(201).send('Blog added successfully!');
+  } catch (err) {
+    res.status(500).send(`Error adding blog: ${err.message}`);
+  }
+}
+
+
+exports.updateBlog = async (req, res) => {
+  const { id } = req.params;
+  const { title, points } = req.body;
+  const files = req.files;
+  const previewImageFile = files.previewImage ? files.previewImage[0] : null;
+  const pointImagesFiles = files.pointImages || [];
+
   try {
-    const blogId = req.params.blogId;
-
-    const existingBlog = await Blog.findById(blogId);
-
-    if (!existingBlog) {
-      return res.status(404).json({ message: "Blog not found" });
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).send('Blog not found');
     }
 
-    if (existingBlog.previewImage) {
-      const imagePath = path.basename(existingBlog.previewImage);
-      const imageBlob = bucket.file(imagePath);
+    const imageUrls = {};
 
-      try {
-        await imageBlob.delete();
-      } catch (err) {
-        return res.status(500).json({ message: "Failed to delete image from storage", error: err.message });
+    // Handle previewImage upload
+    if (previewImageFile) {
+      // Delete old preview image from Firebase if it exists
+      if (blog.previewImage) {
+        const oldPreviewImageName = blog.previewImage.split('/').pop();
+        await bucket.file(oldPreviewImageName).delete();
+      }
+
+      // Upload new preview image
+      const blob = bucket.file(previewImageFile.originalname);
+      const blobStream = blob.createWriteStream({
+        metadata: {
+          contentType: previewImageFile.mimetype
+        }
+      });
+
+      await new Promise((resolve, reject) => {
+        blobStream.on('finish', () => {
+          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+          imageUrls.previewImage = publicUrl;
+          resolve();
+        }).on('error', (err) => {
+          reject(err);
+        }).end(previewImageFile.buffer);
+      });
+
+      blog.previewImage = imageUrls.previewImage;
+    }
+
+    // Handle pointImages upload
+    for (const file of pointImagesFiles) {
+      // Delete old point image from Firebase if it exists
+      for (const key in blog.points) {
+        if (blog.points[key].image) {
+          const oldPointImageName = blog.points[key].image.split('/').pop();
+          await bucket.file(oldPointImageName).delete();
+        }
+      }
+
+      // Upload new point image
+      const blob = bucket.file(file.originalname);
+      const blobStream = blob.createWriteStream({
+        metadata: {
+          contentType: file.mimetype
+        }
+      });
+
+      await new Promise((resolve, reject) => {
+        blobStream.on('finish', () => {
+          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+          imageUrls[file.originalname] = publicUrl;
+          resolve();
+        }).on('error', (err) => {
+          reject(err);
+        }).end(file.buffer);
+      });
+    }
+
+    // Replace image paths in points with URLs
+    const parsedPoints = JSON.parse(points);
+    for (const key in parsedPoints) {
+      if (parsedPoints[key].image && imageUrls[parsedPoints[key].image]) {
+        parsedPoints[key].image = imageUrls[parsedPoints[key].image];
       }
     }
 
-    const deleteBlog = await Blog.findByIdAndDelete(blogId);
-    if (!deleteBlog) {
-      return res.status(401).json({ message: "Failed to delete Blog" });
+    blog.title = title;
+    blog.points = parsedPoints;
+
+    await blog.save();
+    res.status(200).send('Blog updated successfully!');
+  } catch (err) {
+    res.status(500).send(`Error updating blog: ${err.message}`);
+  }
+}
+
+exports.deleteBlog =async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).send('Blog not found');
     }
 
-    res.status(200).json({ message: "Blog deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    // Delete the preview image from Firebase if it exists
+    if (blog.previewImage) {
+      const oldPreviewImageName = blog.previewImage.split('/').pop();
+      await bucket.file(oldPreviewImageName).delete();
+    }
+
+    // Delete point images from Firebase if they exist
+    for (const key in blog.points) {
+      if (blog.points[key].image) {
+        const oldPointImageName = blog.points[key].image.split('/').pop();
+        await bucket.file(oldPointImageName).delete();
+      }
+    }
+
+    // Delete the blog document from MongoDB
+    await Blog.findByIdAndDelete(id);
+
+    res.status(200).send('Blog deleted successfully!');
+  } catch (err) {
+    res.status(500).send(`Error deleting blog: ${err.message}`);
   }
-};
+}
 
-
-
-
-// exports.deleteblog = async (req, res, next) => {
-//   try {
-//     const blogId = req.params.blogId;
-
-//     const existingBlog = await Course.findById(blogId);
-
-//     if (!existingBlog) {
-//       return res.status(404).json({ message: "Blog not found" });
-//     }
-
-//     const fs = require("fs");
-//     fs.unlinkSync(existingBlog.previewImage);
-
-//     const deleteBlog = await Blog.findByIdAndDelete(blogId);
-//     if (!deleteBlog) {
-//       return res.status(401).json({ message: "failed to delete Blog" });
-//     }
-//     res.status(201).json({ message: "Blog deleted" });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
