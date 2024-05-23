@@ -210,3 +210,48 @@ exports.deleteBlog =async (req, res) => {
   }
 }
 
+exports.addComment = async (req, res)=>{
+  const blogId = req.params.blogId;
+  const {text, author} = req.body;
+  try{
+    const blog = await Blog.findById(blogId);
+    if(!blog){
+      res.status(404).json({message : 'blog not found'})
+    }
+    const newComment = {
+      text,
+      author
+    }
+
+    blog.comments.push(newComment)
+
+    await blog.save();
+
+    res.status(201).json({message : 'comment uploaded'})
+  }catch(error){
+    res.status(500).json({error : error.message});
+  }
+}
+
+exports.deleteComment = async (req, res) => {
+  const { blogId, commentId } = req.params;
+
+  try {
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).send('Blog not found');
+    }
+
+    const commentIndex = blog.comments.findIndex(comment => comment._id.toString() === commentId);
+    if (commentIndex === -1) {
+      return res.status(404).send('Comment not found');
+    }
+
+    blog.comments.splice(commentIndex, 1);
+    await blog.save();
+
+    res.status(200).send('Comment deleted successfully!');
+  } catch (err) {
+    res.status(500).send(`Error deleting comment: ${err.message}`);
+  }
+};
