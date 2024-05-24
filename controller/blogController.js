@@ -250,8 +250,8 @@ exports.deleteComment = async (req, res) => {
     blog.comments.splice(commentIndex, 1);
     await blog.save();
 
-    res.status(200).send('Comment deleted successfully!');
+    res.status(200).json({message :'Comment deleted successfully!'});
   } catch (err) {
-    res.status(500).send(`Error deleting comment: ${err.message}`);
+    res.status(500).json({message :`Error deleting comment: ${err.message}`});
   }
 };
