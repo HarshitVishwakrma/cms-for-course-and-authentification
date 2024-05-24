@@ -23,15 +23,17 @@ exports.addCourse = async (req, res, next) => {
   try {
     const { title, description, duration, fee } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ message: 'Preview image is required' });
-    }
+    const files = req.files;
+    const previewImageFile = files.previewImage ? files.previewImage[0] : null;
 
-    const previewImage = req.file;
+    if(!previewImageFile){
+      res.status(404).json({message : "Preview Image required."});
+    }
+    
     const blob = bucket.file(Date.now() + "-" + previewImage.originalname);
     const blobStream = blob.createWriteStream({
       metadata: {
-        contentType: previewImage.mimetype,
+        contentType: previewImageFile.mimetype,
       },
     });
 
@@ -75,13 +77,16 @@ exports.updateCourse = async (req, res, next) => {
     const courseId = req.params.courseId;
     let updateFields = { title, description, duration, fee };
 
+    const files = req.files;
+    const previewImageFile = files.previewImage ? files.previewImage[0] : null;
+
     const existingCourse = await Course.findById(courseId);
 
     if (!existingCourse) {
       return res.status(404).json({ message: 'Course not found' });
     }
 
-    if (req.file) {
+    if (previewImageFile) {
       // Delete the old image from Firebase
       if (existingCourse.previewImage) {
         const oldImagePath = path.basename(existingCourse.previewImage);
@@ -90,7 +95,7 @@ exports.updateCourse = async (req, res, next) => {
       }
 
       // Upload the new image to Firebase
-      const newBlob = bucket.file(Date.now() + "-" + req.file.originalname);
+      const newBlob = bucket.file(Date.now() + "-" + previewImageFile.originalname);
       const newBlobStream = newBlob.createWriteStream({
         metadata: {
           contentType: req.file.mimetype,
