@@ -252,6 +252,6 @@ exports.deleteComment = async (req, res) => {
 
     res.status(200).json({message :'Comment deleted successfully!'});
   } catch (err) {
-    res.status(500).json({message :`Error deleting comment: ${err.message}`});
+   res.status(500).json({error : error.message});
   }
 };
