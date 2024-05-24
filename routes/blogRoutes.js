@@ -15,7 +15,7 @@ router.post('/blogs',authController.authenticateUser,upload, blogController.addB
 router.delete('/blogs/:blogId',authController.authenticateUser, blogController.deleteBlog);
 router.put('/blogs/:blogId',authController.authenticateUser,upload, blogController.updateBlog);
 router.post('/blogs/:blogId', blogController.addComment);
-router.delete('/blogs/:blogId/:commentId', blogController.deleteComment)
+router.delete('/blogs/:blogId/:commentId',authController.authenticateUser, blogController.deleteComment)
 
 
 module.exports = router;
