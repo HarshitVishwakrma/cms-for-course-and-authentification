@@ -26,7 +26,13 @@ exports.login = async (req, res, next)=>{
             return res.status(500).json({message : 'failed to generate login token'});
         }
 
-        res.status(200).json({message : 'user logged in succesfully', token : token, user : user});
+        const response = {
+            email : user.email,
+            userName : user.name,
+            token : token
+        }
+
+        res.status(200).json({message : 'user logged in succesfully', response : response});
 
     }catch(error){
         console.log(error)
