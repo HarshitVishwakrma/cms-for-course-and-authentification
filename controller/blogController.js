@@ -22,7 +22,9 @@ exports.addBlog = async (req, res) => {
   const previewImageFile = files.previewImage ? files.previewImage[0] : null;
   const pointImagesFiles = files.pointImages || [];
 
+  
   try {
+  console.log(title, points, files);
     const imageUrls = {};
 
     // Handle previewImage upload
@@ -82,6 +84,7 @@ exports.addBlog = async (req, res) => {
     await newBlog.save();
     res.status(201).send('Blog added successfully!');
   } catch (err) {
+    console.log(err);
     res.status(500).send(`Error adding blog: ${err.message}`);
   }
 }
