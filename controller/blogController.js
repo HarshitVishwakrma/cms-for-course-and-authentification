@@ -17,6 +17,7 @@ exports.getBlogs = async (req, res, next) => {
 
 
 exports.addBlog = async (req, res) => {
+  console.log("reached here in addBlog");
   const { title, points } = req.body;
   const files = req.files;
   const previewImageFile = files.previewImage ? files.previewImage[0] : null;
@@ -24,12 +25,15 @@ exports.addBlog = async (req, res) => {
 
   
   try {
+    console.log('reached in try blog');
   console.log(title, points, files);
     const imageUrls = {};
 
     // Handle previewImage upload
     if (previewImageFile) {
+      console.log('reached here in if block');
       const blob = bucket.file(previewImageFile.originalname);
+      console.log('reached after the bucket');
       const blobStream = blob.createWriteStream({
         metadata: {
           contentType: previewImageFile.mimetype
