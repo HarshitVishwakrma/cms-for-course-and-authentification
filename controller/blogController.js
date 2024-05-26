@@ -16,82 +16,131 @@ exports.getBlogs = async (req, res, next) => {
 };
 
 
-exports.addBlog = async (req, res) => {
-  console.log("reached here in addBlog");
-  const { title, points } = req.body;
-  const files = req.files;
-  const previewImageFile = files.previewImage ? files.previewImage[0] : null;
-  const pointImagesFiles = files.pointImages || [];
+// exports.addBlog = async (req, res) => {
+//   console.log("reached here in addBlog");
+//   const { title, points } = req.body;
+//   const files = req.files;
+//   const previewImageFile = files.previewImage ? files.previewImage[0] : null;
+//   const pointImagesFiles = files.pointImages || [];
 
   
+//   try {
+//     console.log('reached in try blog');
+//   console.log(title, points, files);
+//     const imageUrls = {};
+
+//     // Handle previewImage upload
+//     if (previewImageFile) {
+//       console.log('reached here in if block');
+//       const blob = bucket.file(previewImageFile.originalname);
+//       console.log('reached after the bucket');
+//       const blobStream = blob.createWriteStream({
+//         metadata: {
+//           contentType: previewImageFile.mimetype
+//         }
+//       });
+
+//       await new Promise((resolve, reject) => {
+//         blobStream.on('finish', () => {
+//           const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+//           imageUrls.previewImage = publicUrl;
+//           resolve();
+//         }).on('error', (err) => {
+//           reject(err);
+//         }).end(previewImageFile.buffer);
+//       });
+//     }
+
+//     // Handle pointImages upload
+//     for (const file of pointImagesFiles) {
+//       const blob = bucket.file(file.originalname);
+//       const blobStream = blob.createWriteStream({
+//         metadata: {
+//           contentType: file.mimetype
+//         }
+//       });
+
+//       await new Promise((resolve, reject) => {
+//         blobStream.on('finish', () => {
+//           const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+//           imageUrls[file.originalname] = publicUrl;
+//           resolve();
+//         }).on('error', (err) => {
+//           reject(err);
+//         }).end(file.buffer);
+//       });
+//     }
+
+//     // Replace image paths in points with URLs
+//     const parsedPoints = JSON.parse(points);
+//     for (const key in parsedPoints) {
+//       if (parsedPoints[key].image && imageUrls[parsedPoints[key].image]) {
+//         parsedPoints[key].image = imageUrls[parsedPoints[key].image];
+//       }
+//     }
+
+//     const newBlog = new Blog({
+//       title,
+//       previewImage: imageUrls.previewImage || '',
+//       points: parsedPoints
+//     });
+
+//     await newBlog.save();
+//     res.status(201).send('Blog added successfully!');
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).send(`Error adding blog: ${err.message}`);
+//   }
+// }
+
+exports.addBlog = async (req, res)=>{
   try {
-    console.log('reached in try blog');
-  console.log(title, points, files);
-    const imageUrls = {};
+    const { title, points } = req.body;
 
-    // Handle previewImage upload
-    if (previewImageFile) {
-      console.log('reached here in if block');
-      const blob = bucket.file(previewImageFile.originalname);
-      console.log('reached after the bucket');
-      const blobStream = blob.createWriteStream({
-        metadata: {
-          contentType: previewImageFile.mimetype
-        }
-      });
+    const files = req.files;
+    const previewImageFile = files.previewImage ? files.previewImage[0] : null;
 
-      await new Promise((resolve, reject) => {
-        blobStream.on('finish', () => {
-          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-          imageUrls.previewImage = publicUrl;
-          resolve();
-        }).on('error', (err) => {
-          reject(err);
-        }).end(previewImageFile.buffer);
-      });
+    if(!previewImageFile){
+      res.status(404).json({message : "Preview Image required."});
     }
-
-    // Handle pointImages upload
-    for (const file of pointImagesFiles) {
-      const blob = bucket.file(file.originalname);
-      const blobStream = blob.createWriteStream({
-        metadata: {
-          contentType: file.mimetype
-        }
-      });
-
-      await new Promise((resolve, reject) => {
-        blobStream.on('finish', () => {
-          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-          imageUrls[file.originalname] = publicUrl;
-          resolve();
-        }).on('error', (err) => {
-          reject(err);
-        }).end(file.buffer);
-      });
-    }
-
-    // Replace image paths in points with URLs
-    const parsedPoints = JSON.parse(points);
-    for (const key in parsedPoints) {
-      if (parsedPoints[key].image && imageUrls[parsedPoints[key].image]) {
-        parsedPoints[key].image = imageUrls[parsedPoints[key].image];
-      }
-    }
-
-    const newBlog = new Blog({
-      title,
-      previewImage: imageUrls.previewImage || '',
-      points: parsedPoints
+    
+    const blob = bucket.file(Date.now() + "-" + previewImage.originalname);
+    const blobStream = blob.createWriteStream({
+      metadata: {
+        contentType: previewImageFile.mimetype,
+      },
     });
 
-    await newBlog.save();
-    res.status(201).json('Blog added successfully!');
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(`Error adding blog: ${err.message}`);
+    blobStream.on("error", (err) => {
+      return res.status(500).json({ message: err.message });
+    });
+
+    blobStream.on("finish", async () => {
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+
+      const newBlog = new Blog({
+        title: title,
+        points : points,
+        previewImage: publicUrl,
+      });
+
+      try {
+        await newCourse.save();
+        res.status(201).json({ message: 'Course created successfully', blog: newBlog });
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    blobStream.end(previewImage.buffer);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
   }
-}
+};
+
+
 
 
 exports.updateBlog = async (req, res) => {
