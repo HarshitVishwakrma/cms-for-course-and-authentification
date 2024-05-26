@@ -95,7 +95,8 @@ exports.getBlogs = async (req, res, next) => {
 
 exports.addBlog = async (req, res)=>{
   try {
-    const { title, points } = req.body;
+    const { title, points, tags } = req.body;
+    const parsedPoints = JSON.parse(points);
 
     const files = req.files;
     const previewImageFile = files.previewImage ? files.previewImage[0] : null;
@@ -120,8 +121,9 @@ exports.addBlog = async (req, res)=>{
 
       const newBlog = new Blog({
         title: title,
-        points : points,
+        points : parsedPoints,
         previewImage: publicUrl,
+        tags: tags
       });
 
       try {
