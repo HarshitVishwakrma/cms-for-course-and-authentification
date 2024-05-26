@@ -104,7 +104,7 @@ exports.addBlog = async (req, res)=>{
       res.status(404).json({message : "Preview Image required."});
     }
     
-    const blob = bucket.file(Date.now() + "-" + previewImage.originalname);
+    const blob = bucket.file(Date.now() + "-" + previewImageFile.originalname);
     const blobStream = blob.createWriteStream({
       metadata: {
         contentType: previewImageFile.mimetype,
