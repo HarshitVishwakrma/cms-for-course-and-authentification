@@ -31,7 +31,7 @@ const commentSchema = new schema({
   createdAt: { type: Date, default: getFormattedDateTime() },
 });
 
-const PointsSchema = new Schema({
+const PointsSchema = new schema({
   text: {
     type: String,
     required: true
