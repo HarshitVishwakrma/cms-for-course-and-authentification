@@ -125,7 +125,7 @@ exports.addBlog = async (req, res)=>{
       });
 
       try {
-        await newCourse.save();
+        await newBlog.save();
         res.status(201).json({ message: 'Course created successfully', blog: newBlog });
       } catch (error) {
         console.log(error);
