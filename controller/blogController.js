@@ -150,10 +150,6 @@ exports.updateBlog = async (req, res) => {
   const previewImageFile = files.previewImage ? files.previewImage[0] : null;
   const pointImagesFiles = files.pointImages || [];
 
-  if(!previewImageFile || previewImageFile){
-    previewImageFile = req.file;
-  }
-
 
   try {
     const blog = await Blog.findById(id);
