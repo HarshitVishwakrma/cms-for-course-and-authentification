@@ -149,8 +149,11 @@ exports.updateBlog = async (req, res) => {
   const files = req.files;
   const previewImageFile = files.previewImage ? files.previewImage[0] : null;
   const pointImagesFiles = files.pointImages || [];
-  console.log(req.file);
-  console.log(req.files);
+
+  if(!previewImageFile || previewImageFile){
+    previewImageFile = req.file;
+  }
+
 
   try {
     const blog = await Blog.findById(id);
