@@ -86,10 +86,10 @@ exports.addBlog = async (req, res) => {
     });
 
     await newBlog.save();
-    res.status(201).send('Blog added successfully!');
+    res.status(201).json('Blog added successfully!');
   } catch (err) {
     console.log(err);
-    res.status(500).send(`Error adding blog: ${err.message}`);
+    res.status(500).json(`Error adding blog: ${err.message}`);
   }
 }
 
