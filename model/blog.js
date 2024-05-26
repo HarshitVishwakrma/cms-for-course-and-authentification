@@ -31,15 +31,20 @@ const commentSchema = new schema({
   createdAt: { type: Date, default: getFormattedDateTime() },
 });
 
-const pointSchema = new mongoose.Schema({
-  text: { type: String, required: true },
-  image: { type: String, required: false }
-}, { _id: false });
-
+const PointsSchema = new Schema({
+  text: {
+    type: String,
+    required: true
+  },
+  image: {
+    type: String,
+    required: true
+  }, 
+});
 
 const blogSchema = new schema({
   title: { type: String, required: true },
-  points: { type: Map,of: pointSchema, required: true },
+  points: PointsSchema,
   previewImage: { type: String, required: true },
   comments: { type: [commentSchema], default: [] },
   createdAt: { type: Date, default: getFormattedDateTime() },
