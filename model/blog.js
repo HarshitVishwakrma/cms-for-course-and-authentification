@@ -31,20 +31,10 @@ const commentSchema = new schema({
   createdAt: { type: Date, default: getFormattedDateTime() },
 });
 
-const PointsSchema = new schema({
-  text: {
-    type: String,
-    required: true
-  },
-  image: {
-    type: String,
-    required: true
-  }, 
-});
 
 const blogSchema = new schema({
   title: { type: String, required: true },
-  points: PointsSchema,
+  points: {type: Object, required : true},
   previewImage: { type: String, required: true },
   comments: { type: [commentSchema], default: [] },
   createdAt: { type: Date, default: getFormattedDateTime() },
