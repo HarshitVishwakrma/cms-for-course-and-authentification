@@ -133,7 +133,7 @@ exports.addBlog = async (req, res)=>{
       }
     });
 
-    blobStream.end(previewImage.buffer);
+    blobStream.end(previewImageFile.buffer);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message });
