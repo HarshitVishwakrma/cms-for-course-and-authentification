@@ -139,6 +139,7 @@ exports.updateBlog = async (req, res) => {
     await blog.save();
     res.status(200).json('Blog updated successfully!');
   } catch (err) {
+    console.log(err);
     res.status(500).json(`Error updating blog: ${err.message}`);
   }
 };
