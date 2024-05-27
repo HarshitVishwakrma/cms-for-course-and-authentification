@@ -128,6 +128,7 @@ exports.updateBlog = async (req, res) => {
         });
 
       } catch (uploadError) {
+        console.log(uploadError);
         return res.status(500).json(`Error uploading image: ${uploadError.message}`);
       }
     }
