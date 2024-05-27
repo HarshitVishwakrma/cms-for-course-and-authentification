@@ -79,11 +79,6 @@ exports.addBlog = async (req, res)=>{
 };
 
 
-
-
-const { Blog } = require('../models/Blog'); // Adjust the path as needed
-const bucket = require('../config/firebase'); // Adjust the path as needed
-
 exports.updateBlog = async (req, res) => {
   const { id } = req.params;
   const { title, points } = req.body;
