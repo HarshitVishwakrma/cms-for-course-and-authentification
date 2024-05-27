@@ -81,7 +81,7 @@ exports.addBlog = async (req, res)=>{
 
 
 exports.updateBlog = async (req, res) => {
-  const { id } = req.params;
+  const { blogId } = req.params;
   const { title, points, para } = req.body;
   const files = req.files;
   const previewImageFile = files && files.previewImage ? files.previewImage[0] : null;
@@ -95,7 +95,7 @@ exports.updateBlog = async (req, res) => {
   }
 
   try {
-    const blog = await Blog.findById(id);
+    const blog = await Blog.findById(blogId);
     if (!blog) {
       return res.status(404).json('Blog not found');
     }
@@ -145,10 +145,10 @@ exports.updateBlog = async (req, res) => {
 
 
 exports.deleteBlog =async (req, res) => {
-  const { id } = req.params;
+  const { blogId } = req.params;
 
   try {
-    const blog = await Blog.findById(id);
+    const blog = await Blog.findById(blogId);
     if (!blog) {
       return res.status(404).json('Blog not found');
     }
@@ -168,7 +168,7 @@ exports.deleteBlog =async (req, res) => {
     }
 
     // Delete the blog document from MongoDB
-    await Blog.findByIdAndDelete(id);
+    await Blog.findByIdAndDelete(blogId);
 
     res.status(200).json('Blog deleted successfully!');
   } catch (err) {
