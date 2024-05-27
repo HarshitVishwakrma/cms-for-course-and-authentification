@@ -11,7 +11,8 @@ const courseSchema = new schema({
   previewImage: {
     type: String, // Assuming storing image path as string
     required: true
-  }
+  }, 
+  para : {type : String, required : true}
 });
 
 
