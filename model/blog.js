@@ -37,6 +37,7 @@ const blogSchema = new schema({
   points: {type: Object, required : true},
   previewImage: { type: String, required: true },
   tags : {type : Array, default : []},
+  para: {type : String, required : true},
   comments: { type: [commentSchema], default: [] },
   createdAt: { type: Date, default: getFormattedDateTime() },
 });

@@ -31,7 +31,7 @@ exports.getSingleBlog = async (req, res, next) => {
 
 exports.addBlog = async (req, res)=>{
   try {
-    const { title, points, tags } = req.body;
+    const { title, points, tags, para } = req.body;
     const parsedPoints = JSON.parse(points);
 
     const files = req.files;
@@ -59,7 +59,8 @@ exports.addBlog = async (req, res)=>{
         title: title,
         points : parsedPoints,
         previewImage: publicUrl,
-        tags: tags
+        tags: tags, 
+        para : para
       });
 
       try {
@@ -81,7 +82,7 @@ exports.addBlog = async (req, res)=>{
 
 exports.updateBlog = async (req, res) => {
   const { id } = req.params;
-  const { title, points } = req.body;
+  const { title, points, para } = req.body;
   const files = req.files;
   const previewImageFile = files && files.previewImage ? files.previewImage[0] : null;
 
@@ -133,6 +134,7 @@ exports.updateBlog = async (req, res) => {
 
     blog.title = title;
     blog.points = parsedPoints;
+    blog.para = para;
 
     await blog.save();
     res.status(200).json('Blog updated successfully!');
