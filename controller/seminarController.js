@@ -104,6 +104,7 @@ exports.updateSeminars = async (req, res) => {
       await seminar.save();
       res.status(200).json('Seminar updated successfully!');
     } catch (err) {
+      console.log(err);
       res.status(500).json(`Error updating seminar: ${err.message}`);
     }
   };
