@@ -88,7 +88,9 @@ exports.updateCourse = async (req, res, next) => {
   try {   
     const { title, description, duration, fee } = req.body;
     const courseId = req.params.courseId;
-    let updateFields = { title, description, duration, fee };
+    const parsedDescription = JSON.parse(description);
+    
+    let updateFields = { title, parsedDescription, duration, fee };
 
     const files = req.files;
     const previewImageFile = files.previewImage ? files.previewImage[0] : null;
