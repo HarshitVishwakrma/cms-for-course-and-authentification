@@ -125,7 +125,7 @@ exports.deleteSeminars = async (req, res) => {
       }
   
       // Delete the seminar document from MongoDB
-      await Seminar.findByIdAndDelete(id);
+      await Seminar.findByIdAndDelete(seminarId);
   
       res.status(200).json('Seminar deleted successfully!');
     } catch (err) {
