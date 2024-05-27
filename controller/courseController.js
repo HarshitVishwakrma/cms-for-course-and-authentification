@@ -30,7 +30,7 @@ exports.addCourse = async (req, res, next) => {
       res.status(404).json({message : "Preview Image required."});
     }
     
-    const blob = bucket.file(Date.now() + "-" + previewImage.originalname);
+    const blob = bucket.file(Date.now() + "-" + previewImageFile.originalname);
     const blobStream = blob.createWriteStream({
       metadata: {
         contentType: previewImageFile.mimetype,
@@ -61,7 +61,7 @@ exports.addCourse = async (req, res, next) => {
       }
     });
 
-    blobStream.end(previewImage.buffer);
+    blobStream.end(previewImageFile.buffer);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message });
