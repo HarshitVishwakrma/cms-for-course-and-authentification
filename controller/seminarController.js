@@ -24,7 +24,7 @@ exports.addSeminars =async (req, res) => {
     const previewImageFile = files.previewImage ? files.previewImage[0] : null;
     try {
       if (!previewImageFile) {
-        return res.status(400).send('Preview image is required');
+        return res.status(400).json('Preview image is required');
       }
   
       // Upload preview image to Firebase
@@ -53,23 +53,23 @@ exports.addSeminars =async (req, res) => {
       });
   
       await newSeminar.save();
-      res.status(201).send('Seminar added successfully!');
+      res.status(201).json('Seminar added successfully!');
     } catch (err) {
-      res.status(500).send(`Error adding seminar: ${err.message}`);
+      res.status(500).json(`Error adding seminar: ${err.message}`);
     }
   };
 
 exports.updateSeminars = async (req, res) => {
-    const { id } = req.params;
+    const { seminarId } = req.params;
     const { title, place } = req.body;
     // const previewImageFile = req.file;
     const files = req.files;
     const previewImageFile = files.previewImage ? files.previewImage[0] : null;
   
     try {
-      const seminar = await Seminar.findById(id);
+      const seminar = await Seminar.findById(seminarId);
       if (!seminar) {
-        return res.status(404).send('Seminar not found');
+        return res.status(404).json('Seminar not found');
       }
   
       if (previewImageFile) {
@@ -102,19 +102,19 @@ exports.updateSeminars = async (req, res) => {
       seminar.place = place;
   
       await seminar.save();
-      res.status(200).send('Seminar updated successfully!');
+      res.status(200).json('Seminar updated successfully!');
     } catch (err) {
-      res.status(500).send(`Error updating seminar: ${err.message}`);
+      res.status(500).json(`Error updating seminar: ${err.message}`);
     }
   };
 
 exports.deleteSeminars = async (req, res) => {
-    const { id } = req.params;
+    const { seminarId } = req.params;
   
     try {
-      const seminar = await Seminar.findById(id);
+      const seminar = await Seminar.findById(seminarId);
       if (!seminar) {
-        return res.status(404).send('Seminar not found');
+        return res.status(404).json('Seminar not found');
       }
   
       // Delete preview image from Firebase
@@ -126,8 +126,8 @@ exports.deleteSeminars = async (req, res) => {
       // Delete the seminar document from MongoDB
       await Seminar.findByIdAndDelete(id);
   
-      res.status(200).send('Seminar deleted successfully!');
+      res.status(200).json('Seminar deleted successfully!');
     } catch (err) {
-      res.status(500).send(`Error deleting seminar: ${err.message}`);
+      res.status(500).json(`Error deleting seminar: ${err.message}`);
     }
   }
