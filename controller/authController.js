@@ -29,6 +29,7 @@ exports.login = async (req, res, next)=>{
         const response = {
             email : user.email,
             userName : user.name,
+            authorization : user.authorization,
             token : token
         }
 
