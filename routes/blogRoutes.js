@@ -11,6 +11,7 @@ const upload = require('../multerconfig')
 
 
 router.get('/blogs', blogController.getBlogs);
+router.get('/blogs/:blogId', blogController.getSingleBlog);
 router.post('/blogs',authController.authenticateUser,upload, blogController.addBlog);
 router.delete('/blogs/:blogId',authController.authenticateUser, blogController.deleteBlog);
 router.put('/blogs/:blogId',authController.authenticateUser,upload, blogController.updateBlog);

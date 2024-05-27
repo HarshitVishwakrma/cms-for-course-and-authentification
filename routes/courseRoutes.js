@@ -9,6 +9,8 @@ const upload = require('../multerconfig')
 
 router.get('/courses', courseController.getCourses);
 
+router.get('/courses/:courseId', courseController.getSingleCourse);
+
 router.post('/courses',authController.authenticateUser,upload, courseController.addCourse);
 
 
