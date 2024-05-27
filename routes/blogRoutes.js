@@ -4,7 +4,6 @@ const router = express.Router();
 
 const blogController = require('../controller/blogController');
 const authController = require('../controller/authController');
-const Blog = require('../model/blog')
 const upload = require('../multerconfig')
 
 
