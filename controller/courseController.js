@@ -34,7 +34,7 @@ exports.getSingleCourse = async (req, res)=>{
 
 exports.addCourse = async (req, res, next) => {
   try {
-    const { title, description, duration, fee, para } = req.body;
+    const { title, description, duration, fee, para, catogary } = req.body;
     const parsedDescription = JSON.parse(description);
 
     const files = req.files;
@@ -60,6 +60,7 @@ exports.addCourse = async (req, res, next) => {
 
       const newCourse = new Course({
         title: title,
+        catogary : catogary,
         description: parsedDescription,
         duration: duration,
         fee: fee,
@@ -88,11 +89,11 @@ exports.addCourse = async (req, res, next) => {
 
 exports.updateCourse = async (req, res, next) => {
   try {   
-    const { title, description, duration, fee, para } = req.body;
+    const { title, description, duration, fee, para, catogary } = req.body;
     const courseId = req.params.courseId;
     const parsedDescription = JSON.parse(description);
     
-    let updateFields = { title, parsedDescription, duration, fee, para };
+    let updateFields = { title, parsedDescription, duration, fee, para, catogary };
 
     const files = req.files;
     const previewImageFile = files.previewImage ? files.previewImage[0] : null;
