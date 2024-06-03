@@ -4,7 +4,7 @@ const path = require('path')
 
 exports.getCourses = async (req, res, next)=>{
     try{
-        const courses = await Course.find();
+        const courses = await Course.find({catogary : 'online'});
         if(!courses || courses.length < 1){
             return res.status(404).json({message : 'no courses found'});
         }
@@ -16,6 +16,21 @@ exports.getCourses = async (req, res, next)=>{
         res.status(500).json({ error: error.message });
     }
 }
+
+exports.getOfflineCourses = async (req, res)=>{
+  try{
+    const courses = await Course.find({catogary : 'offline'});
+    if(!courses || courses.length < 1){
+      return res.status(404).json({message : 'no courses found'});
+  }
+
+  res.status(200).json({message : 'courses found', courses : courses});
+  }catch(error){
+    console.log(error)
+    res.status(500).json({ error: error.message });
+}
+}
+
 
 
 exports.getSingleCourse = async (req, res)=>{
